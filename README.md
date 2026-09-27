@@ -105,6 +105,13 @@ changes are relayed. With no unique SEL or no saved targets, it waits. Manual
 Apply, incoming VBAN command batches and settings/input-learning dialogs briefly
 pause tracking; changes during that pause are not replayed afterward.
 
+Keep the intended source SEL lit orange while editing a submix. Clicking an
+already active SEL turns it off. With every SEL off, VoiceMeeter's normal input
+fader can change all bus submixes independently of Direct Input. An empty Apply
+list makes Direct Input send no copies; it does not restrict VoiceMeeter's own
+fader behavior. Live mouse and MIDI testing confirmed that only the selected
+bus changed with its Apply list empty.
+
 Read/write errors or unconfirmed destination values pause Direct Input and show
 an orange status message. Toggle it off and on after resolving the problem.
 Turning it off stops new writes; commands already queued in the VoiceMeeter API
