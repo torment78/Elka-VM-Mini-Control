@@ -9,6 +9,7 @@
  <SolidColorBrush x:Key="AccentBrush" Color="#22A6B3" />
  <SolidColorBrush x:Key="OrangeBrush" Color="#F08A3E" />
  <SolidColorBrush x:Key="GoodBrush" Color="#55C27A" />
+ <SolidColorBrush x:Key="DirectInputBrush" Color="#48AEFF" />
  <SolidColorBrush x:Key="{x:Static SystemColors.ControlBrushKey}" Color="#1A2025" />
  <SolidColorBrush x:Key="{x:Static SystemColors.ControlTextBrushKey}" Color="#EDF3F6" />
  <SolidColorBrush x:Key="{x:Static SystemColors.WindowBrushKey}" Color="#111417" />
@@ -55,6 +56,26 @@
     <Trigger Property="IsKeyboardFocused" Value="True"><Setter TargetName="Chrome" Property="BorderBrush" Value="{StaticResource AccentBrush}" /></Trigger>
     <Trigger Property="IsPressed" Value="True"><Setter TargetName="Chrome" Property="Opacity" Value=".7" /></Trigger>
     <Trigger Property="IsEnabled" Value="False"><Setter Property="Opacity" Value=".4" /></Trigger>
+   </ControlTemplate.Triggers>
+  </ControlTemplate></Setter.Value></Setter>
+ </Style>
+ <Style x:Key="DirectInputToggle" TargetType="ToggleButton">
+  <Setter Property="Background" Value="{StaticResource RaisedBrush}" />
+  <Setter Property="Foreground" Value="{StaticResource MutedBrush}" />
+  <Setter Property="BorderBrush" Value="{StaticResource StrokeBrush}" />
+  <Setter Property="FontSize" Value="11" /><Setter Property="FontWeight" Value="SemiBold" />
+  <Setter Property="Cursor" Value="Hand" />
+  <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="ToggleButton">
+   <Border x:Name="Chrome" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="1" CornerRadius="4">
+    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+   </Border>
+   <ControlTemplate.Triggers>
+    <Trigger Property="IsChecked" Value="True">
+     <Setter Property="Background" Value="#1688F5" /><Setter Property="BorderBrush" Value="#63BCFF" /><Setter Property="Foreground" Value="White" />
+    </Trigger>
+    <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="Chrome" Property="BorderBrush" Value="#63BCFF" /></Trigger>
+    <Trigger Property="IsKeyboardFocused" Value="True"><Setter TargetName="Chrome" Property="BorderBrush" Value="White" /></Trigger>
+    <Trigger Property="IsPressed" Value="True"><Setter TargetName="Chrome" Property="Opacity" Value=".75" /></Trigger>
    </ControlTemplate.Triggers>
   </ControlTemplate></Setter.Value></Setter>
  </Style>

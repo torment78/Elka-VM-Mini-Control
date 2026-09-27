@@ -31,11 +31,19 @@
     </Button>
    </DataTemplate></ItemsControl.ItemTemplate>
   </ItemsControl>
-  <StackPanel Grid.Row="3" Margin="0,10,0,6">
+  <Grid Grid.Row="3" Margin="-3,10,-3,6" UseLayoutRounding="False">
+   <Grid.ColumnDefinitions><ColumnDefinition /><ColumnDefinition /><ColumnDefinition /><ColumnDefinition /><ColumnDefinition /><ColumnDefinition /><ColumnDefinition /><ColumnDefinition /></Grid.ColumnDefinitions>
+   <ToggleButton x:Name="DirectInputButton" Grid.Column="6" Grid.ColumnSpan="2" Margin="3,0,3,2" Height="23.5" VerticalAlignment="Bottom"
+    Style="{StaticResource DirectInputToggle}" Content="Direct Input" Click="ToggleDirectInput"
+    AutomationProperties.Name="Direct Input"
+    ToolTip="Follow changes in the selected SEL's input levels using its saved Apply destinations. Blue: on. Gray: off." />
+  <StackPanel Grid.Column="0" Grid.ColumnSpan="6" Margin="3,0,10,0">
    <TextBlock x:Name="StatusText" Text="Connecting to VoiceMeeter…" Foreground="{StaticResource MutedBrush}" FontSize="11" TextWrapping="Wrap" />
    <TextBlock x:Name="InputText" Foreground="{StaticResource MutedBrush}" FontSize="11" TextWrapping="Wrap" Margin="0,3,0,0" />
    <TextBlock x:Name="VbanText" Foreground="{StaticResource MutedBrush}" FontSize="11" TextTrimming="CharacterEllipsis" Margin="0,3,0,0" Visibility="Collapsed" />
+   <TextBlock x:Name="DirectInputText" Foreground="#48AEFF" FontSize="11" TextTrimming="CharacterEllipsis" Margin="0,3,0,0" Visibility="Collapsed" />
   </StackPanel>
+  </Grid>
   <Grid Grid.Row="4">
    <TextBlock x:Name="HintText" Text="Ctrl-click Apply: destinations · Right-click: input binding" Foreground="{StaticResource MutedBrush}" FontSize="10" />
    <TextBlock Text="Made by Elka Soft" Foreground="{StaticResource MutedBrush}" FontSize="10" HorizontalAlignment="Right" />

@@ -21,6 +21,7 @@ internal static partial class Program
         {
             if (args.Contains("--live-probe")) { LiveProbe(); return 0; }
             CoreChecks().GetAwaiter().GetResult();
+            DirectInputChecks().GetAwaiter().GetResult();
             VbanChecks().GetAwaiter().GetResult();
             MidiChecks();
             string output = Path.GetFullPath(args.FirstOrDefault() ?? "artifacts/checks");
@@ -181,6 +182,7 @@ internal static partial class Program
         Check(buttons.All(b => !((BusViewModel)b.DataContext).Selected), "Disconnected UI clears SEL while destination setup stays available");
         window.Close();
         TrayChecks(output);
+        DirectInputUiChecks(output);
     }
     private static void PumpUntil(Func<bool> ready)
     {
@@ -233,7 +235,7 @@ internal sealed class FakeRemote : IRemoteApi
 {
     public readonly Dictionary<string, float> Values = [];
     public readonly List<string> Scripts = [];
-    public bool Connected = true, ApplyWrites = true;
+    public bool Connected = true, ApplyWrites = true, FailWrite;
     public string? FailRead;
     public FakeRemote()
     {
@@ -249,6 +251,7 @@ internal sealed class FakeRemote : IRemoteApi
     public float Read(string parameter) => FailRead == parameter ? throw new InvalidOperationException("Test read failed.") : Values[parameter];
     public void Write(string script)
     {
+        if (FailWrite) throw new InvalidOperationException("Test write failed.");
         Scripts.Add(script); if (!ApplyWrites) return;
         foreach (var statement in script.Split(';', StringSplitOptions.RemoveEmptyEntries))
         {

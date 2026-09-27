@@ -75,6 +75,13 @@ public partial class MainWindow : Window
     public void RefreshState()
     {
         _mixer.Poll();
+        _mixer.UpdateDirectInput(_settings.DirectInputEnabled, _settings.Destinations, _dialogOpen || _vbanExecuting);
+        DirectInputButton.IsChecked = _settings.DirectInputEnabled;
+        DirectInputText.Visibility = _settings.DirectInputEnabled ? Visibility.Visible : Visibility.Collapsed;
+        DirectInputText.Text = _mixer.DirectInput.Status; DirectInputText.ToolTip = _mixer.DirectInput.Status;
+        DirectInputText.Foreground = (Brush)FindResource(_mixer.DirectInput.Faulted ? "OrangeBrush" : "DirectInputBrush");
+        double desiredHeight = 330 + (_settings.Vban.Enabled ? 20 : 0) + (_settings.DirectInputEnabled ? 18 : 0);
+        if (Height != desiredHeight) Height = desiredHeight;
         for (int i = 0; i < 8; i++) _buses[i].Update(_mixer.Selected[i], _settings);
         BusButtons.IsEnabled = ApplyButtons.IsEnabled = !_vbanExecuting && !_mixer.Applying;
         SettingsButton.IsEnabled = !_vbanExecuting && !_mixer.Applying;
@@ -89,6 +96,11 @@ public partial class MainWindow : Window
         for (int source = 0; source < 8; source++)
             for (int target = 0; target < 8; target++)
                 _targetItems[source, target].IsChecked = source != target && _settings.ApplyTargets[source][target];
+    }
+    private void ToggleDirectInput(object sender, RoutedEventArgs e)
+    {
+        _settings.DirectInputEnabled = DirectInputButton.IsChecked == true;
+        Save(); RefreshState();
     }
     private void Toggle(int bus)
     {
@@ -187,7 +199,8 @@ public partial class MainWindow : Window
                     Mode = selected.Mode, MidiDevice = selected.Device ?? _settings.MidiDevice,
                     Hotkeys = _settings.Hotkeys, Midi = _settings.Midi, ApplyTargets = _settings.ApplyTargets,
                     Vban = selected.Vban, StartWithWindows = selected.StartWithWindows,
-                    StartInTray = selected.StartInTray, CloseToTray = selected.CloseToTray
+                    StartInTray = selected.StartInTray, CloseToTray = selected.CloseToTray,
+                    DirectInputEnabled = _settings.DirectInputEnabled
                 };
                 _store.Save(updated);
                 try { _startup.SetEnabled(updated.StartWithWindows); }
@@ -218,7 +231,6 @@ public partial class MainWindow : Window
     {
         int generation = ++_vbanGeneration;
         _vban?.Dispose(); _vban = null; _vbanError = false;
-        Height = _settings.Vban.Enabled ? 350 : 330;
         if (!_settings.Vban.Enabled) { _vbanStatus = "VBAN Text disabled"; return; }
         try
         {

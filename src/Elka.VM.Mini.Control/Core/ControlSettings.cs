@@ -55,6 +55,7 @@ public sealed class ControlSettings
     public bool StartWithWindows { get; set; }
     public bool StartInTray { get; set; }
     public bool CloseToTray { get; set; } = true;
+    public bool DirectInputEnabled { get; set; }
     public HotkeyBinding?[] Hotkeys { get; set; } = new HotkeyBinding?[ButtonCount];
     public MidiBinding?[] Midi { get; set; } = new MidiBinding?[ButtonCount];
     public bool[][] ApplyTargets { get; set; } = Enumerable.Range(0, 8).Select(_ => new bool[8]).ToArray();

@@ -2,7 +2,7 @@
 
 A compact Windows desktop control for VoiceMeeter Potato, made by **Elka Soft**.
 Two rows of eight buttons: orange SEL buttons above individual Apply buttons.
-Bidirectional synchronization, saved per-bus destinations, global hotkeys, MIDI
+Bidirectional synchronization, Direct Input linking, saved per-bus destinations, global hotkeys, MIDI
 learn and incoming VBAN Text. Uses the dark charcoal and teal palette from the existing
 Elka VoiceMeeter FX Host app. No installer or separate API download.
 
@@ -76,6 +76,39 @@ pan, mute, EQ, effects, bus master gain, or audio-device settings. No settings
 are written to VoiceMeeter on startup. Copying is rejected while disconnected,
 without saved destinations, or while a change is pending.
 An unconfirmed copy reports an error rather than success.
+
+## Direct Input
+
+The **Direct Input** toggle sits beneath **Apply B2 and B3**, immediately above
+the Elka Soft credit. It spans those two buttons and is half an Apply button
+high: **bright blue means enabled**, and **gray means off**. The choice is saved;
+it starts off for existing/new settings that do not contain this option.
+
+1. Select a source SEL, either here or in VoiceMeeter.
+2. Ctrl-click that source's Apply button and choose its destinations.
+3. Enable Direct Input and move the source's input submix faders in VoiceMeeter.
+
+For example, with **A2 SEL** active and **A4, A5 and B1** checked beneath A2,
+moving A2's input 3 level sends that exact level to input 3 on A4, A5 and B1.
+Each moved input follows independently. Unmoved input levels retain their current
+values; use manual Apply to copy all eight at once.
+
+The app checks approximately every 100 ms and sends only changed
+`Strip[i].GainLayer[source]` values. It follows the currently selected bus's own
+saved destination list, including SEL changes made directly in VoiceMeeter.
+Routing, pan, mute, EQ and bus master levels are not linked. Destination changes
+never feed back into the source. Operation continues while hidden in the tray.
+
+Enabling the toggle, changing SEL/destinations, restarting or reconnecting
+captures current levels without immediately copying them. Subsequent fader
+changes are relayed. With no unique SEL or no saved targets, it waits. Manual
+Apply, incoming VBAN command batches and settings/input-learning dialogs briefly
+pause tracking; changes during that pause are not replayed afterward.
+
+Read/write errors or unconfirmed destination values pause Direct Input and show
+an orange status message. Toggle it off and on after resolving the problem.
+Turning it off stops new writes; commands already queued in the VoiceMeeter API
+may finish. The existing manual Apply buttons remain available in either mode.
 
 ## Hotkeys
 
@@ -168,7 +201,7 @@ receive or route VBAN audio.
 ## Saved preferences
 
 Input mode, MIDI device, bindings for both rows, eight destination profiles,
-startup/tray preferences and all VBAN receiver fields are saved
+startup/tray preferences, Direct Input mode and all VBAN receiver fields are saved
 to `%LOCALAPPDATA%\ElkaSoft\ElkaVMMiniControl\settings.json`. Mixer levels are
 always read from VoiceMeeter rather than saved by this app.
 The original eight SEL bindings are retained on upgrade. The former single
@@ -189,6 +222,10 @@ IP, port and stream into a simulated mixer, checking command order and filtering
 Tray checks cover hidden startup, background SEL/hotkey/VBAN operation, restoring
 the window, close/exit behavior, and resource release. Startup registration checks
 use an isolated temporary registry key; they do not enable Windows startup.
+Direct Input checks cover independent moved inputs, source/profile switching,
+rapid fader moves and delayed readback, feedback prevention, disconnects, error
+pausing, saved mode and hidden-window operation. Mixer writes in these checks
+use a simulated API; the live probe below remains read-only.
 The checks render the main window, settings, hotkey, MIDI and VBAN dialogs into
 `artifacts/checks`.
 

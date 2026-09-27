@@ -18,10 +18,18 @@ public sealed class MixerController(IRemoteApi remote) : IDisposable
     public bool SelectionPending => _pending is not null;
     public string Status { get; private set; } = "Connecting to VoiceMeeter…";
     public string? ActionError { get; private set; }
+    public DirectInputLink DirectInput { get; } = new(remote);
     public int Source => Selected.Count(v => v) == 1 ? Array.IndexOf(Selected, true) : -1;
     private bool[]? _pending;
     private DateTime _pendingUntil;
     private readonly CancellationTokenSource _lifetime = new();
+
+    public void UpdateDirectInput(bool enabled, Func<int, IEnumerable<int>> destinations, bool suspended = false)
+    {
+        string? pause = !Connected ? "waiting for VoiceMeeter" :
+            SelectionPending ? "waiting for SEL" : Applying || suspended ? "waiting for the current action" : null;
+        DirectInput.Tick(enabled, Source, Source >= 0 ? destinations(Source) : [], pause);
+    }
 
     public void Poll()
     {
