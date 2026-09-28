@@ -1,4 +1,4 @@
-param([string]$Source = "$PSScriptRoot\..\src\Elka.VM.Mini.Control\Assets\ElkaMiniControl.png")
+param([string]$Source = "$PSScriptRoot\..\src\Elka.SEL.Mini.Control\Assets\ElkaMiniControl.png")
 $ErrorActionPreference = 'Stop'
 Add-Type -AssemblyName System.Drawing
 $destination = [System.IO.Path]::ChangeExtension([System.IO.Path]::GetFullPath($Source), '.ico')

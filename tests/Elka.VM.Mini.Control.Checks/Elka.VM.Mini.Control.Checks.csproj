@@ -1,7 +1,0 @@
-<Project Sdk="Microsoft.NET.Sdk">
- <PropertyGroup>
-  <OutputType>Exe</OutputType><TargetFramework>net8.0-windows</TargetFramework><UseWPF>true</UseWPF>
-  <ImplicitUsings>enable</ImplicitUsings><Nullable>enable</Nullable><PlatformTarget>x64</PlatformTarget>
- </PropertyGroup>
- <ItemGroup><ProjectReference Include="../../src/Elka.VM.Mini.Control/Elka.VM.Mini.Control.csproj" /></ItemGroup>
-</Project>

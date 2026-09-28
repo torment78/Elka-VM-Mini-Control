@@ -1,4 +1,6 @@
-# Elka VM Mini Control
+# Elka SEL Mini Control
+
+**for VoiceMeeter**
 
 A compact Windows desktop control for VoiceMeeter Potato, made by **Elka Soft**.
 Two rows of eight buttons: orange SEL buttons above individual Apply buttons.
@@ -42,8 +44,8 @@ Screenshots are rendered from the app using example labels, levels and destinati
 ## Open and run
 
 For a portable build, download the ZIP from the
-[dev prerelease](https://github.com/torment78/Elka-VM-Mini-Control/releases/tag/v0.5.0),
-extract the entire archive, and run **Elka.VM.Mini.Control.exe**. The Windows x64
+[dev prerelease](https://github.com/torment78/Elka-SEL-Mini-Control/releases/tag/v0.5.1),
+extract the entire archive, and run **Elka.SEL.Mini.Control.exe**. The Windows x64
 ZIP includes the .NET runtime. Close an older instance using its tray **Exit**
 command first. Existing preferences are retained. No installer is included.
 
@@ -58,14 +60,14 @@ detected during upgrade; if hidden, follow the prompt to use its tray menu.
 Older releases cannot enforce the rule themselves, so avoid starting an old
 executable after opening this version.
 
-Open **Elka VM Mini Control.sln** in Visual Studio 2022 with the **.NET desktop
-development** workload and .NET 8 SDK. Set `Elka.VM.Mini.Control` as the startup
+Open **Elka SEL Mini Control.sln** in Visual Studio 2022 with the **.NET desktop
+development** workload and .NET 8 SDK. Set `Elka.SEL.Mini.Control` as the startup
 project and press F5. The application targets Windows x64.
 
 For a quick start, double-click **Run.cmd** in this folder. It builds and launches
 the application. A Release executable is also produced at:
 
-`src\Elka.VM.Mini.Control\bin\Release\net8.0-windows\Elka.VM.Mini.Control.exe`
+`src\Elka.SEL.Mini.Control\bin\Release\net8.0-windows\Elka.SEL.Mini.Control.exe`
 
 The source build uses the .NET 8 Desktop Runtime. Keep its adjacent `.dll` and
 `.json` files with it if you copy the build to another folder. VoiceMeeter Potato
@@ -83,7 +85,7 @@ Settings has three independent choices:
 - **Close to tray** makes the window's X hide it while the app keeps running.
   On by default. Turn this off if X should quit.
 
-The notification icon is named **Elka VM Mini Control**. Right-click it for a
+The notification icon is named **Elka SEL Mini Control**. Right-click it for a
 dark **Open / Exit** menu, or left-click to open the window. **Exit always quits**,
 releases the API, MIDI, hotkeys and VBAN port, and removes the tray icon.
 If the icon is in Windows' overflow area, look under the taskbar's hidden-icons
@@ -310,16 +312,26 @@ receive or route VBAN audio.
 
 Input mode, MIDI device, bindings for both rows, eight destination profiles,
 startup/tray preferences, Fader mode, Direct Input mode and all VBAN receiver fields are saved
-to `%LOCALAPPDATA%\ElkaSoft\ElkaVMMiniControl\settings.json`. Mixer levels are
+to `%LOCALAPPDATA%\ElkaSoft\ElkaSELMiniControl\settings.json`. Mixer levels are
 always read from VoiceMeeter rather than saved by this app.
 The original eight SEL bindings are retained on upgrade. The former single
 destination checklist is migrated to each Apply profile, excluding its own source.
 
+Upgrading from **Elka VM Mini Control** automatically imports your previous
+settings if the new settings file does not exist. The old file in
+`%LOCALAPPDATA%\ElkaSoft\ElkaVMMiniControl` is retained as a backup. An existing
+Windows startup entry is moved to the new app name and executable on first launch;
+startup stays off if you never enabled it. Single-instance protection is shared
+with version 0.5.0 under the previous name.
+
+The incoming **`VMC.SEL(...)`** and **`VMC.SEL.Apply(...)`** commands remain the
+same so existing VBAN senders keep working.
+
 ## Verification
 
 ```powershell
-dotnet build "Elka VM Mini Control.sln" -c Release
-dotnet run --project tests/Elka.VM.Mini.Control.Checks -c Release -- artifacts/checks
+dotnet build "Elka SEL Mini Control.sln" -c Release
+dotnet run --project tests/Elka.SEL.Mini.Control.Checks -c Release -- artifacts/checks
 ```
 
 The dependency-free checks cover copying and error paths, external SEL changes,
@@ -346,7 +358,7 @@ The checks render the main window, settings, hotkey, MIDI and VBAN dialogs into
 Optional **read-only** verification of your installed API:
 
 ```powershell
-dotnet run --project tests/Elka.VM.Mini.Control.Checks -c Release -- --live-probe
+dotnet run --project tests/Elka.SEL.Mini.Control.Checks -c Release -- --live-probe
 ```
 
 This lists live SEL, input labels and gain-layer values plus MIDI device names, without

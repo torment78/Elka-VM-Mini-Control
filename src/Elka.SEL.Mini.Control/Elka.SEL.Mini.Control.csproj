@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <UseWindowsForms>true</UseWindowsForms>
+    <ApplicationIcon>Assets\ElkaMiniControl.ico</ApplicationIcon>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <PlatformTarget>x64</PlatformTarget>
+    <AssemblyName>Elka.SEL.Mini.Control</AssemblyName>
+    <RootNamespace>Elka.SEL.Mini.Control</RootNamespace>
+    <Product>Elka SEL Mini Control</Product>
+    <Company>Elka Soft</Company>
+    <Version>0.5.1</Version>
+    <Description>Elka SEL Mini Control for VoiceMeeter. Made by Elka Soft.</Description>
+  </PropertyGroup>
+  <ItemGroup>
+    <Using Remove="System.Windows.Forms" />
+    <Using Remove="System.Drawing" />
+    <Resource Include="Assets\ElkaMiniControl.ico" />
+  </ItemGroup>
+</Project>
