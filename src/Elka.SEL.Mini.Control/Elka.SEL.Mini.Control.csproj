@@ -12,7 +12,7 @@
     <RootNamespace>Elka.SEL.Mini.Control</RootNamespace>
     <Product>Elka SEL Mini Control</Product>
     <Company>Elka Soft</Company>
-    <Version>0.5.1</Version>
+    <Version>0.5.2</Version>
     <Description>Elka SEL Mini Control for VoiceMeeter. Made by Elka Soft.</Description>
   </PropertyGroup>
   <ItemGroup>
