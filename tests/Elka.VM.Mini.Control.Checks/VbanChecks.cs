@@ -59,7 +59,9 @@ internal static partial class Program
         try { await VmcCommands.ExecuteAsync("VMC.SEL(A2);Command.Shutdown=1;", mixer, _ => []); } catch (FormatException) { invalidBatch = true; }
         Check(invalidBatch && fake.Scripts.Count == writes, "Whole command batch validated before any mixer write");
         await VmcCommands.ExecuteAsync("VMC.SEL[A3];", mixer, _ => []);
-        Check(mixer.Source == -1, "VMC SEL without a value toggles off an active bus");
+        Check(mixer.Source == 2, "VMC SEL without a value keeps the active bus selected");
+        await Reject(() => VmcCommands.ExecuteAsync("VMC.SEL(A3)=0;", mixer, _ => []), "VBAN Off cannot bypass the Ctrl-click master-mode safeguard");
+        mixer.EnterMasterMode(2); mixer.Poll();
         await VmcCommands.ExecuteAsync("VMC.SEL.Apply(A3);", mixer, profiles.Destinations);
         Check(mixer.Source == -1, "A saved Apply profile can run with no SEL active");
         await Reject(() => VmcCommands.ExecuteAsync("VMC.SEL.Apply(A4);", mixer, profiles.Destinations), "VBAN Apply with no saved destinations is rejected");
@@ -110,7 +112,7 @@ internal static partial class Program
         await sender.SendAsync("VMC.SEL(A3);"u8.ToArray(), endpoint);
         await sender.SendAsync(Packet("VMC.SEL(A3);", 2, settings.StreamName), endpoint);
         await second.Task.WaitAsync(TimeSpan.FromSeconds(3));
-        Check(handled == 2 && mixer.Source == -1, "UDP duplicates, stale frames, wrong streams and raw text do not trigger SEL");
+        Check(handled == 2 && mixer.Source == 2, "UDP duplicates, stale frames, wrong streams and raw text do not change SEL");
         bool conflict = false;
         try { using var other = new VbanTextReceiver(settings, (_, _, _) => Task.CompletedTask, _ => { }); } catch (SocketException) { conflict = true; }
         Check(conflict, "Occupied VBAN port reports a bind failure instead of sharing the socket");

@@ -22,6 +22,8 @@ internal static partial class Program
             if (args.Contains("--live-probe")) { LiveProbe(); return 0; }
             CoreChecks().GetAwaiter().GetResult();
             DirectInputChecks().GetAwaiter().GetResult();
+            FaderChecks();
+            SelectionGuardChecks().GetAwaiter().GetResult();
             VbanChecks().GetAwaiter().GetResult();
             MidiChecks();
             string output = Path.GetFullPath(args.FirstOrDefault() ?? "artifacts/checks");
@@ -50,9 +52,9 @@ internal static partial class Program
         using var fake = new FakeRemote(); using var mixer = new MixerController(fake);
         mixer.Poll(); Check(mixer.Connected && mixer.Source == -1 && fake.Scripts.Count == 0, "Startup reads without writing mixer settings");
         mixer.Toggle(2); mixer.Poll(); Check(mixer.Source == 2, "App selects A3 through the SEL API");
-        mixer.Toggle(2); mixer.Poll(); Check(mixer.Source == -1, "Pressing active SEL clears it");
+        mixer.Toggle(2); mixer.Poll(); Check(mixer.Source == 2, "Pressing active SEL keeps it selected");
         fake.Select(7); mixer.Poll(); Check(mixer.Source == 7, "External selection updates the app");
-        fake.Select(-1); mixer.Poll(); Check(mixer.Source == -1, "External deselection turns the button off");
+        fake.Select(-1); mixer.Poll(); Check(mixer.Source == -1 && mixer.MasterMode, "External deselection is reflected as master mode without blocking external controllers");
         fake.Select(2); mixer.Poll();
         for (int strip = 0; strip < 8; strip++) fake.Values[$"Strip[{strip}].GainLayer[2]"] = strip == 0 ? -60 : strip == 7 ? 12 : -strip * 1.25f;
         var before = new Dictionary<string, float>(fake.Values);
@@ -138,7 +140,7 @@ internal static partial class Program
         var buttons = Descendants<Button>((ItemsControl)window.FindName("BusButtons")).ToList();
         Check(buttons.Count == 8, "All SEL templates instantiate");
         buttons.Single(b => ((BusViewModel)b.DataContext).Index == 2).RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
-        Check(fake.Values["Bus[2].Sel"] == 0, "Mouse button deselects SEL");
+        Check(fake.Values["Bus[2].Sel"] == 1, "Mouse click preserves the active SEL");
         fake.Select(7); window.RefreshState();
         Check(((BusViewModel)buttons[7].DataContext).Selected, "UI follows external source changes");
         var applyRow = (ItemsControl)window.FindName("ApplyButtons");
@@ -183,6 +185,8 @@ internal static partial class Program
         window.Close();
         TrayChecks(output);
         DirectInputUiChecks(output);
+        FaderUiChecks(output);
+        SelectionGuardUiChecks(output);
     }
     private static void PumpUntil(Func<bool> ready)
     {
@@ -219,7 +223,9 @@ internal static partial class Program
     {
         using var remote = new VoiceMeeterRemote();
         remote.Refresh();
+        Thread.Sleep(150); remote.Refresh();
         Console.WriteLine("Installed API: " + remote.LibraryPath);
+        Console.WriteLine("Input names: " + string.Join(" | ", Enumerable.Range(0, 8).Select(s => remote.ReadText($"Strip[{s}].Label"))));
         for (int bus = 0; bus < 8; bus++)
         {
             Console.WriteLine($"{MixerController.BusNames[bus]} SEL={remote.Read($"Bus[{bus}].Sel")}; input levels=" +
@@ -235,6 +241,7 @@ internal sealed class FakeRemote : IRemoteApi
 {
     public readonly Dictionary<string, float> Values = [];
     public readonly List<string> Scripts = [];
+    public readonly Dictionary<string, string> TextValues = [];
     public bool Connected = true, ApplyWrites = true, FailWrite;
     public string? FailRead;
     public FakeRemote()
@@ -249,6 +256,7 @@ internal sealed class FakeRemote : IRemoteApi
     public void Select(int bus) { for (int i = 0; i < 8; i++) Values[$"Bus[{i}].Sel"] = i == bus ? 1 : 0; }
     public void Refresh() { if (!Connected) throw new InvalidOperationException("VoiceMeeter disconnected."); }
     public float Read(string parameter) => FailRead == parameter ? throw new InvalidOperationException("Test read failed.") : Values[parameter];
+    public string ReadText(string parameter) => FailRead == parameter ? throw new InvalidOperationException("Test label read failed.") : TextValues.GetValueOrDefault(parameter, "");
     public void Write(string script)
     {
         if (FailWrite) throw new InvalidOperationException("Test write failed.");

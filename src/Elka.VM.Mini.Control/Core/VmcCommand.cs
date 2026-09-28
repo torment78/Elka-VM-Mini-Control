@@ -7,7 +7,7 @@ public sealed record VmcCommand(bool Apply, int Bus, SelAction Action);
 
 public static partial class VmcCommands
 {
-    public const string Examples = "VMC.SEL(A1);\nVMC.SEL(A1)=1;\nVMC.SEL(A1)=0;\nVMC.SEL.Apply(A1);\nVMC.SEL.Apply(A2);\nVMC.SEL.Apply[B3];";
+    public const string Examples = "VMC.SEL(A1);\nVMC.SEL(A1)=1;\nVMC.SEL.Apply(A1);\nVMC.SEL.Apply(A2);\nVMC.SEL.Apply[B3];";
 
     public static async Task<string?> ExecuteAsync(string text, MixerController mixer, Func<int, IEnumerable<int>> savedTargets, CancellationToken token = default)
     {

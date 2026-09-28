@@ -1,5 +1,6 @@
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
 using Elka.VM.Mini.Control.Core;
@@ -49,15 +50,21 @@ public sealed class SettingsDialog : SmallDialog
     private readonly CheckBox _startWithWindows = new() { Content = "Start with Windows", Margin = new Thickness(0, 0, 0, 9) };
     private readonly CheckBox _startInTray = new() { Content = "Start in tray · keep the window hidden", Margin = new Thickness(0, 0, 0, 9) };
     private readonly CheckBox _closeToTray = new() { Content = "Close to tray · X keeps the app running", Margin = new Thickness(0, 0, 0, 9) };
+    private readonly ToggleButton _faderMode = new() { Content = "Fader mode", Height = 32, Width = 150, HorizontalAlignment = HorizontalAlignment.Left, Margin = new Thickness(0, 0, 0, 12) };
     public bool StartWithWindows => _startWithWindows.IsChecked == true;
     public bool StartInTray => _startInTray.IsChecked == true;
     public bool CloseToTray => _closeToTray.IsChecked == true;
+    public bool FaderMode => _faderMode.IsChecked == true;
     public InputMode Mode => _midi.IsChecked == true ? InputMode.Midi : InputMode.Hotkeys;
     public string? Device => (_devices.SelectedItem as MidiDevice)?.Name;
     public VbanSettings Vban { get; private set; }
     public SettingsDialog(Window? owner, ControlSettings settings, bool? startWithWindows = null, Action<SettingsDialog>? save = null) : base(owner, "Settings · Elka VM Mini Control")
     {
         Vban = settings.Vban;
+        _faderMode.SetResourceReference(StyleProperty, "DirectInputToggle");
+        _faderMode.IsChecked = settings.FaderMode;
+        _faderMode.ToolTip = "Show eight named input faders for the selected SEL. Save to apply.";
+        Body.Children.Add(_faderMode);
         Text("Startup and tray", true);
         _startWithWindows.IsChecked = startWithWindows ?? settings.StartWithWindows;
         _startInTray.IsChecked = settings.StartInTray; _closeToTray.IsChecked = settings.CloseToTray;

@@ -30,7 +30,7 @@ public sealed class VbanSettingsDialog : SmallDialog
             FontSize = 12, Padding = new Thickness(10), AcceptsReturn = true, Height = 128,
             VerticalScrollBarVisibility = ScrollBarVisibility.Auto, Margin = new Thickness(0, 0, 0, 12)
         });
-        Text("Top row: SEL toggles that bus. Bottom row: Apply uses that bus’s saved destinations. Ctrl-click an Apply button to set them. Square brackets work too.");
+        Text("Top row: SEL selects that bus and keeps it selected. Master mode requires Ctrl-click on the active SEL in the app. Bottom row: Apply uses that bus’s saved destinations. Square brackets work too.");
         Actions(Button("Cancel", Close), Button("Use settings", () =>
         {
             if (!int.TryParse(_port.Text, out int port)) { Error.Text = "Enter a valid UDP port."; return; }

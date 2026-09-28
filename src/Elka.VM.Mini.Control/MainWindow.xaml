@@ -3,7 +3,7 @@
  Title="Elka VM Mini Control" Style="{StaticResource {x:Type Window}}" Width="720" Height="330" MinWidth="660" MinHeight="330"
  ResizeMode="CanMinimize" WindowStartupLocation="CenterScreen" Icon="Assets/ElkaMiniControl.ico">
  <Grid x:Name="RootPanel" Margin="18,14">
-  <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="*" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
+  <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="*" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
   <Grid Margin="0,0,0,16">
    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
     <Border Background="#14343B" BorderBrush="#24606A" BorderThickness="1" CornerRadius="5" Padding="10,6" Margin="0,0,10,0">
@@ -16,7 +16,7 @@
   <ItemsControl x:Name="BusButtons" Grid.Row="1" Margin="-3,0,-3,7">
    <ItemsControl.ItemsPanel><ItemsPanelTemplate><UniformGrid Rows="1" Columns="8" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
    <ItemsControl.ItemTemplate><DataTemplate>
-    <Button Style="{StaticResource SelButton}" Click="SelectBus" PreviewMouseLeftButtonDown="ConfigureHotkey" PreviewMouseRightButtonUp="ConfigureMidi" />
+    <Button Style="{StaticResource SelButton}" Click="SelectBus" PreviewMouseLeftButtonDown="CtrlClickSel" PreviewMouseRightButtonUp="ConfigureMidi" />
    </DataTemplate></ItemsControl.ItemTemplate>
   </ItemsControl>
   <ItemsControl x:Name="ApplyButtons" Grid.Row="2" Margin="-3,0,-3,0">
@@ -31,7 +31,37 @@
     </Button>
    </DataTemplate></ItemsControl.ItemTemplate>
   </ItemsControl>
-  <Grid Grid.Row="3" Margin="-3,10,-3,6" UseLayoutRounding="False">
+  <Grid x:Name="FaderPanel" Grid.Row="3" Height="306" Visibility="Collapsed" Margin="-3,0,-3,0">
+   <Grid.RowDefinitions><RowDefinition Height="38" /><RowDefinition /></Grid.RowDefinitions>
+   <Grid Margin="3,12,3,6">
+    <TextBlock x:Name="FaderSourceText" Text="INPUT LEVELS · Select one SEL" Foreground="{StaticResource AccentBrush}" FontWeight="SemiBold" FontSize="11" Margin="0,0,140,0" TextTrimming="CharacterEllipsis" />
+    <TextBlock Text="Double-click: 0 dB" Foreground="{StaticResource MutedBrush}" FontSize="10" HorizontalAlignment="Right" />
+   </Grid>
+   <ItemsControl x:Name="FaderItems" Grid.Row="1">
+    <ItemsControl.ItemsPanel><ItemsPanelTemplate><UniformGrid Rows="1" Columns="8" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+    <ItemsControl.ItemTemplate><DataTemplate>
+     <Border Margin="3,0" Padding="4,9,4,8" CornerRadius="7" Background="{StaticResource PanelBrush}" BorderBrush="{StaticResource StrokeBrush}" BorderThickness="1">
+      <Grid>
+       <Grid.RowDefinitions><RowDefinition Height="23" /><RowDefinition /><RowDefinition Height="27" /></Grid.RowDefinitions>
+       <TextBlock Text="{Binding Input}" Foreground="{StaticResource MutedBrush}" FontSize="10" FontWeight="SemiBold" HorizontalAlignment="Center" />
+       <Grid Grid.Row="1">
+        <Grid.ColumnDefinitions><ColumnDefinition Width="14" /><ColumnDefinition /></Grid.ColumnDefinitions>
+        <TextBlock Text="{Binding Name}" ToolTip="{Binding Name}" Foreground="{StaticResource TextBrush}" FontSize="12" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" HorizontalAlignment="Center" MaxWidth="190">
+         <TextBlock.LayoutTransform><RotateTransform Angle="-90" /></TextBlock.LayoutTransform>
+        </TextBlock>
+        <Slider Grid.Column="1" Style="{StaticResource SubmixFader}" Value="{Binding Level, Mode=OneWay}" IsEnabled="{Binding Ready}"
+         ValueChanged="FaderChanged" PreviewMouseLeftButtonDown="BeginFaderGesture" PreviewMouseLeftButtonUp="EndFaderGesture" PreviewKeyDown="FaderKeyDown" MouseDoubleClick="ResetFader"
+         AutomationProperties.Name="{Binding AccessibleLabel}" ToolTip="{Binding AccessibleLabel}" />
+       </Grid>
+       <Border Grid.Row="2" Margin="0,6,0,0" Background="#101619" CornerRadius="3">
+        <TextBlock Text="{Binding LevelText}" Foreground="{StaticResource AccentBrush}" FontFamily="Consolas" FontSize="11" HorizontalAlignment="Center" VerticalAlignment="Center" />
+       </Border>
+      </Grid>
+     </Border>
+    </DataTemplate></ItemsControl.ItemTemplate>
+   </ItemsControl>
+  </Grid>
+  <Grid Grid.Row="4" Margin="-3,10,-3,6" UseLayoutRounding="False">
    <Grid.ColumnDefinitions><ColumnDefinition /><ColumnDefinition /><ColumnDefinition /><ColumnDefinition /><ColumnDefinition /><ColumnDefinition /><ColumnDefinition /><ColumnDefinition /></Grid.ColumnDefinitions>
    <ToggleButton x:Name="DirectInputButton" Grid.Column="6" Grid.ColumnSpan="2" Margin="3,0,3,2" Height="23.5" VerticalAlignment="Bottom"
     Style="{StaticResource DirectInputToggle}" Content="Direct Input" Click="ToggleDirectInput"
@@ -44,8 +74,8 @@
    <TextBlock x:Name="DirectInputText" Foreground="#48AEFF" FontSize="11" TextTrimming="CharacterEllipsis" Margin="0,3,0,0" Visibility="Collapsed" />
   </StackPanel>
   </Grid>
-  <Grid Grid.Row="4">
-   <TextBlock x:Name="HintText" Text="Ctrl-click Apply: destinations · Right-click: input binding" Foreground="{StaticResource MutedBrush}" FontSize="10" />
+  <Grid Grid.Row="5">
+   <TextBlock x:Name="HintText" Text="Ctrl-click SEL: master · Ctrl-click Apply: targets · Right-click: bind" Foreground="{StaticResource MutedBrush}" FontSize="10" />
    <TextBlock Text="Made by Elka Soft" Foreground="{StaticResource MutedBrush}" FontSize="10" HorizontalAlignment="Right" />
   </Grid>
  </Grid>

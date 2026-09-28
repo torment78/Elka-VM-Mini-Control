@@ -21,6 +21,9 @@ public partial class MainWindow : Window
     public bool CloseToTray => _settings.CloseToTray;
     private ControlSettings _settings = new();
     private readonly BusViewModel[] _buses = Enumerable.Range(0, 8).Select(i => new BusViewModel(i)).ToArray();
+    private readonly FaderViewModel[] _faders = Enumerable.Range(0, 8).Select(i => new FaderViewModel(i)).ToArray();
+    private bool _refreshingFaders;
+    private int _displayedFaderSource = -1, _faderGestureSource = -1;
     private readonly DispatcherTimer _poll = new() { Interval = TimeSpan.FromMilliseconds(100) };
     private readonly MidiInput _midi;
     private readonly MidiPressTracker _midiPresses = new();
@@ -46,6 +49,7 @@ public partial class MainWindow : Window
         try { _settings = _store.Load(); }
         catch (Exception ex) { Notice("Could not load saved settings: " + ex.Message, true); }
         BusButtons.ItemsSource = ApplyButtons.ItemsSource = _buses;
+        FaderItems.ItemsSource = _faders;
         _midi = new MidiInput(Dispatcher); _midi.Received += ReceiveMidi;
         BuildTargetMenu();
         _poll.Tick += (_, _) => RefreshState();
@@ -76,11 +80,13 @@ public partial class MainWindow : Window
     {
         _mixer.Poll();
         _mixer.UpdateDirectInput(_settings.DirectInputEnabled, _settings.Destinations, _dialogOpen || _vbanExecuting);
+        _mixer.UpdateFaders(_settings.FaderMode, _dialogOpen || _vbanExecuting);
+        RefreshFaderDisplay();
         DirectInputButton.IsChecked = _settings.DirectInputEnabled;
         DirectInputText.Visibility = _settings.DirectInputEnabled ? Visibility.Visible : Visibility.Collapsed;
         DirectInputText.Text = _mixer.DirectInput.Status; DirectInputText.ToolTip = _mixer.DirectInput.Status;
         DirectInputText.Foreground = (Brush)FindResource(_mixer.DirectInput.Faulted ? "OrangeBrush" : "DirectInputBrush");
-        double desiredHeight = 330 + (_settings.Vban.Enabled ? 20 : 0) + (_settings.DirectInputEnabled ? 18 : 0);
+        double desiredHeight = 330 + (_settings.Vban.Enabled ? 20 : 0) + (_settings.DirectInputEnabled ? 18 : 0) + (_settings.FaderMode ? 306 : 0);
         if (Height != desiredHeight) Height = desiredHeight;
         for (int i = 0; i < 8; i++) _buses[i].Update(_mixer.Selected[i], _settings);
         BusButtons.IsEnabled = ApplyButtons.IsEnabled = !_vbanExecuting && !_mixer.Applying;
@@ -97,6 +103,53 @@ public partial class MainWindow : Window
             for (int target = 0; target < 8; target++)
                 _targetItems[source, target].IsChecked = source != target && _settings.ApplyTargets[source][target];
     }
+    private void RefreshFaderDisplay()
+    {
+        _refreshingFaders = true;
+        try
+        {
+            FaderPanel.Visibility = _settings.FaderMode ? Visibility.Visible : Visibility.Collapsed;
+            var bank = _mixer.Faders;
+            if (bank.Error is not null) Notice(bank.Error, true);
+            _displayedFaderSource = bank.Ready ? bank.Source : -1;
+            FaderSourceText.Text = bank.Error ?? (_displayedFaderSource >= 0
+                ? $"INPUT LEVELS · {MixerController.BusNames[_displayedFaderSource]}"
+                : _mixer.MasterMode ? "MASTER MODE · Select SEL to edit a submix"
+                : _mixer.Connected ? "INPUT LEVELS · Select one SEL" : "INPUT LEVELS · Waiting for VoiceMeeter");
+            FaderSourceText.ToolTip = FaderSourceText.Text;
+            FaderSourceText.Foreground = (Brush)FindResource(bank.Error is null ? "AccentBrush" : "OrangeBrush");
+            for (int i = 0; i < 8; i++) _faders[i].Update(bank.Names[i], bank.Levels[i], bank.Ready);
+        }
+        finally { _refreshingFaders = false; }
+    }
+    private void BeginFaderGesture(object sender, MouseButtonEventArgs e)
+        => _faderGestureSource = _displayedFaderSource;
+    private void EndFaderGesture(object sender, MouseButtonEventArgs e)
+        => _faderGestureSource = -1;
+    private void FaderKeyDown(object sender, KeyEventArgs e)
+    {
+        if (Mouse.LeftButton != MouseButtonState.Pressed) _faderGestureSource = -1;
+    }
+    private void FaderChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+    {
+        if (_refreshingFaders || !_settings.FaderMode || _dialogOpen || _vbanExecuting || _closed) return;
+        if (sender is not Slider { DataContext: FaderViewModel fader } slider || !fader.Ready) return;
+        // A template's initial binding can fire after the polling update has finished.
+        if (Math.Abs(e.NewValue - fader.Level) < .00001) return;
+        int source = _faderGestureSource >= 0 ? _faderGestureSource : _displayedFaderSource;
+        try { _mixer.SetFaderLevel(source, fader.Index, (float)slider.Value); }
+        catch (Exception ex) { Notice(ex.Message, true); }
+        RefreshState();
+        _refreshingFaders = true;
+        try { slider.SetCurrentValue(Slider.ValueProperty, fader.Level); }
+        finally { _refreshingFaders = false; }
+    }
+    private void ResetFader(object sender, MouseButtonEventArgs e)
+    {
+        if (e.ChangedButton != MouseButton.Left) return;
+        e.Handled = true;
+        ((Slider)sender).SetCurrentValue(Slider.ValueProperty, 0d);
+    }
     private void ToggleDirectInput(object sender, RoutedEventArgs e)
     {
         _settings.DirectInputEnabled = DirectInputButton.IsChecked == true;
@@ -106,14 +159,23 @@ public partial class MainWindow : Window
     {
         if (_dialogOpen || _closed || _vbanExecuting) return;
         if (bus >= 8) { _ = ApplyBusAsync(bus - 8); return; }
-        _message = null; _mixer.Toggle(bus); RefreshState();
+        _message = null; _mixer.ToggleBinding(bus); RefreshState();
     }
-    private void SelectBus(object sender, RoutedEventArgs e) => Toggle(((BusViewModel)((Button)sender).DataContext).Index);
-    private void ConfigureHotkey(object sender, MouseButtonEventArgs e)
+    private void SelectBus(object sender, RoutedEventArgs e) => ActivateSel(((BusViewModel)((Button)sender).DataContext).Index, controlClick: false);
+    private void CtrlClickSel(object sender, MouseButtonEventArgs e)
     {
-        if ((Keyboard.Modifiers & ModifierKeys.Control) == 0 || _settings.Mode != InputMode.Hotkeys) return;
+        if ((Keyboard.Modifiers & ModifierKeys.Control) == 0) return;
         e.Handled = true;
-        EditHotkey(((BusViewModel)((Button)sender).DataContext).Index);
+        ActivateSel(((BusViewModel)((Button)sender).DataContext).Index, controlClick: true);
+    }
+    private void ActivateSel(int bus, bool controlClick)
+    {
+        if (_dialogOpen || _closed || _vbanExecuting) return;
+        _message = null;
+        _mixer.Poll();
+        if (controlClick && _mixer.Selected[bus]) _mixer.EnterMasterMode(bus);
+        else _mixer.Toggle(bus);
+        RefreshState();
     }
     private void ConfigureMidi(object sender, MouseButtonEventArgs e)
     {
@@ -200,7 +262,7 @@ public partial class MainWindow : Window
                     Hotkeys = _settings.Hotkeys, Midi = _settings.Midi, ApplyTargets = _settings.ApplyTargets,
                     Vban = selected.Vban, StartWithWindows = selected.StartWithWindows,
                     StartInTray = selected.StartInTray, CloseToTray = selected.CloseToTray,
-                    DirectInputEnabled = _settings.DirectInputEnabled
+                    DirectInputEnabled = _settings.DirectInputEnabled, FaderMode = selected.FaderMode
                 };
                 _store.Save(updated);
                 try { _startup.SetEnabled(updated.StartWithWindows); }

@@ -17,7 +17,7 @@ public sealed class BusViewModel(int index) : INotifyPropertyChanged
     public void Update(bool selected, ControlSettings settings)
     {
         string label = settings.Mode == InputMode.Hotkeys ? settings.Hotkeys[Index]?.ToString() ?? "Unassigned" : settings.Midi[Index]?.ToString() ?? "Unassigned";
-        string tip = $"{Name} SEL · {(selected ? "On" : "Off")}\n{label}\n" + (settings.Mode == InputMode.Hotkeys ? "Ctrl-click to assign a hotkey." : "Right-click to learn a MIDI button.");
+        string tip = $"{Name} SEL · {(selected ? "On" : "Off")}\n{label}\nClick to select. Ctrl-click the active SEL for master mode.\n" + (settings.Mode == InputMode.Hotkeys ? "Right-click to assign a hotkey." : "Right-click to learn a MIDI button.");
         string[] destinations = settings.Destinations(Index).Select(i => MixerController.BusNames[i]).ToArray();
         string summary = destinations.Length == 0 ? "Set targets" : string.Join(", ", destinations);
         string applyBinding = settings.Mode == InputMode.Hotkeys ? settings.Hotkeys[Index + 8]?.ToString() ?? "No hotkey" : settings.Midi[Index + 8]?.ToString() ?? "No MIDI binding";

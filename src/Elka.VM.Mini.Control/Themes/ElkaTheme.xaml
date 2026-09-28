@@ -79,6 +79,51 @@
    </ControlTemplate.Triggers>
   </ControlTemplate></Setter.Value></Setter>
  </Style>
+ <Style x:Key="FaderTrackButton" TargetType="RepeatButton">
+  <Setter Property="Focusable" Value="False" />
+  <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="RepeatButton"><Border Background="Transparent" /></ControlTemplate></Setter.Value></Setter>
+ </Style>
+ <Style x:Key="SubmixFader" TargetType="Slider">
+  <Setter Property="Orientation" Value="Vertical" /><Setter Property="Minimum" Value="-60" /><Setter Property="Maximum" Value="12" />
+  <Setter Property="SmallChange" Value="0.1" /><Setter Property="LargeChange" Value="1" />
+  <Setter Property="IsMoveToPointEnabled" Value="False" /><Setter Property="Width" Value="48" />
+  <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="Slider">
+   <Grid x:Name="FaderChrome" Background="Transparent" SnapsToDevicePixels="True">
+    <Grid Margin="0,15">
+     <Grid.RowDefinitions><RowDefinition /><RowDefinition /><RowDefinition /><RowDefinition /><RowDefinition /><RowDefinition /><RowDefinition Height="0" /></Grid.RowDefinitions>
+     <Border Grid.RowSpan="7" Width="8" HorizontalAlignment="Right" Margin="0,0,7,0" Background="#090D10" CornerRadius="4" BorderThickness="1" BorderBrush="#36464F" />
+     <Path Grid.RowSpan="7" Data="M 0,0 L 5,0 M 0,1 L 5,1 M 0,2 L 5,2 M 0,3 L 5,3 M 0,4 L 5,4 M 0,5 L 5,5 M 0,6 L 5,6" Stretch="Fill" Stroke="#718792" StrokeThickness="1" Width="4" HorizontalAlignment="Left" Margin="22,0,0,0" />
+     <TextBlock Text="+12" FontSize="12" FontWeight="Medium" Foreground="#CAD5DC" Width="21" TextAlignment="Right" HorizontalAlignment="Left" VerticalAlignment="Top"><TextBlock.RenderTransform><TranslateTransform Y="-8" /></TextBlock.RenderTransform></TextBlock>
+     <Border Grid.Row="1" Height="1" Width="4" Margin="22,0,0,0" HorizontalAlignment="Left" Background="#47D5DE" VerticalAlignment="Top" />
+     <TextBlock Grid.Row="1" Text="0" FontSize="12" FontWeight="Medium" Foreground="#47D5DE" Width="21" TextAlignment="Right" HorizontalAlignment="Left" VerticalAlignment="Top"><TextBlock.RenderTransform><TranslateTransform Y="-8" /></TextBlock.RenderTransform></TextBlock>
+     <TextBlock Grid.Row="5" Text="−60" FontSize="12" FontWeight="Medium" Foreground="#CAD5DC" Width="21" Height="16" TextAlignment="Right" HorizontalAlignment="Left" VerticalAlignment="Bottom"><TextBlock.RenderTransform><TranslateTransform Y="8" /></TextBlock.RenderTransform></TextBlock>
+    </Grid>
+    <Track x:Name="PART_Track" Width="22" HorizontalAlignment="Right" Orientation="Vertical" IsDirectionReversed="False">
+     <Track.DecreaseRepeatButton><RepeatButton Style="{StaticResource FaderTrackButton}" Command="{x:Static Slider.DecreaseLarge}" /></Track.DecreaseRepeatButton>
+     <Track.Thumb>
+      <Thumb Width="22" Height="30" Cursor="SizeNS">
+       <Thumb.Template><ControlTemplate TargetType="Thumb">
+        <Border x:Name="Cap" BorderThickness="1" BorderBrush="#6D858D" CornerRadius="4">
+         <Border.Background><LinearGradientBrush StartPoint="0,0" EndPoint="0,1"><GradientStop Color="#52656D" Offset="0" /><GradientStop Color="#2D3B43" Offset=".46" /><GradientStop Color="#1B262D" Offset=".52" /><GradientStop Color="#35464E" Offset="1" /></LinearGradientBrush></Border.Background>
+         <Grid Margin="4,4">
+          <Border Height="1" Background="#70858F" VerticalAlignment="Top" />
+          <Border Height="2" Background="#47D5DE" VerticalAlignment="Center" CornerRadius="1" />
+          <Border Height="1" Background="#0B1419" VerticalAlignment="Bottom" />
+         </Grid>
+        </Border>
+        <ControlTemplate.Triggers><Trigger Property="IsMouseOver" Value="True"><Setter TargetName="Cap" Property="BorderBrush" Value="#64E2E8" /></Trigger><Trigger Property="IsDragging" Value="True"><Setter TargetName="Cap" Property="BorderBrush" Value="#F08A3E" /></Trigger></ControlTemplate.Triggers>
+       </ControlTemplate></Thumb.Template>
+      </Thumb>
+     </Track.Thumb>
+     <Track.IncreaseRepeatButton><RepeatButton Style="{StaticResource FaderTrackButton}" Command="{x:Static Slider.IncreaseLarge}" /></Track.IncreaseRepeatButton>
+    </Track>
+   </Grid>
+   <ControlTemplate.Triggers>
+    <Trigger Property="IsEnabled" Value="False"><Setter TargetName="FaderChrome" Property="Opacity" Value=".3" /></Trigger>
+    <Trigger Property="IsKeyboardFocusWithin" Value="True"><Setter TargetName="FaderChrome" Property="Background" Value="#182E33" /></Trigger>
+   </ControlTemplate.Triggers>
+  </ControlTemplate></Setter.Value></Setter>
+ </Style>
  <Style x:Key="SelButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
   <Setter Property="Padding" Value="0" />
   <Setter Property="Margin" Value="3,0" />

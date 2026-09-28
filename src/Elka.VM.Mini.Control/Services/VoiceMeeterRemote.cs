@@ -1,5 +1,6 @@
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Text;
 using Microsoft.Win32;
 using Elka.VM.Mini.Control.Core;
 
@@ -12,6 +13,7 @@ public sealed class VoiceMeeterRemote : IRemoteApi
     private NoArgs? _login, _logout, _dirty;
     private GetVmType? _type;
     private GetFloat? _get;
+    private GetString? _getString;
     private SetParameters? _set;
     public string? LibraryPath { get; private set; }
 
@@ -42,6 +44,14 @@ public sealed class VoiceMeeterRemote : IRemoteApi
         if (code != 0) throw new InvalidOperationException($"VoiceMeeter rejected the change ({code}).");
     }
 
+    public string ReadText(string parameter)
+    {
+        var value = new StringBuilder(512);
+        int code = _getString!(parameter, value);
+        if (code != 0) throw new InvalidOperationException($"Could not read {parameter} ({code}).");
+        return value.ToString();
+    }
+
     private void Load()
     {
         string? path = InstalledFolders().Distinct(StringComparer.OrdinalIgnoreCase)
@@ -53,6 +63,7 @@ public sealed class VoiceMeeterRemote : IRemoteApi
             _login = Export<NoArgs>("VBVMR_Login"); _logout = Export<NoArgs>("VBVMR_Logout");
             _dirty = Export<NoArgs>("VBVMR_IsParametersDirty"); _type = Export<GetVmType>("VBVMR_GetVoicemeeterType");
             _get = Export<GetFloat>("VBVMR_GetParameterFloat"); _set = Export<SetParameters>("VBVMR_SetParameters");
+            _getString = Export<GetString>("VBVMR_GetParameterStringW");
             LibraryPath = path;
         }
         catch
@@ -96,5 +107,8 @@ public sealed class VoiceMeeterRemote : IRemoteApi
     [UnmanagedFunctionPointer(CallingConvention.StdCall)] private delegate int NoArgs();
     [UnmanagedFunctionPointer(CallingConvention.StdCall)] private delegate int GetVmType(out int type);
     [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)] private delegate int GetFloat(string parameter, out float value);
+    // The W API returns UTF-16, but its parameter name remains ANSI.
+    [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
+    private delegate int GetString([MarshalAs(UnmanagedType.LPStr)] string parameter, [Out] StringBuilder value);
     [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)] private delegate int SetParameters(string script);
 }
