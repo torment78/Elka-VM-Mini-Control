@@ -19,7 +19,9 @@ internal static partial class Program
     {
         try
         {
+            if (args.Length > 0 && args[0].StartsWith("--instance-")) return InstanceProbe(args);
             if (args.Contains("--live-probe")) { LiveProbe(); return 0; }
+            SingleInstanceChecks();
             CoreChecks().GetAwaiter().GetResult();
             DirectInputChecks().GetAwaiter().GetResult();
             FaderChecks();
@@ -187,6 +189,7 @@ internal static partial class Program
         DirectInputUiChecks(output);
         FaderUiChecks(output);
         SelectionGuardUiChecks(output);
+        SingleInstanceUiChecks(output);
     }
     private static void PumpUntil(Func<bool> ready)
     {

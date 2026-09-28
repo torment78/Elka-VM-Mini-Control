@@ -42,10 +42,21 @@ Screenshots are rendered from the app using example labels, levels and destinati
 ## Open and run
 
 For a portable build, download the ZIP from the
-[dev prerelease](https://github.com/torment78/Elka-VM-Mini-Control/releases/tag/v0.5.0-dev.1),
+[dev prerelease](https://github.com/torment78/Elka-VM-Mini-Control/releases/tag/v0.5.0),
 extract the entire archive, and run **Elka.VM.Mini.Control.exe**. The Windows x64
 ZIP includes the .NET runtime. Close an older instance using its tray **Exit**
 command first. Existing preferences are retained. No installer is included.
+
+Dev releases increment the final version number: **0.5.0, 0.5.1, 0.5.2…**
+They remain marked **Pre-release** on GitHub while there is no installer.
+
+Only one copy runs in each Windows desktop session, even from different folders
+or newer versions. Opening the app again restores the running copy from the tray
+or a minimized window; it does not create another mixer connection. To switch
+versions, choose **Exit** on the current copy first. A running older build is
+detected during upgrade; if hidden, follow the prompt to use its tray menu.
+Older releases cannot enforce the rule themselves, so avoid starting an old
+executable after opening this version.
 
 Open **Elka VM Mini Control.sln** in Visual Studio 2022 with the **.NET desktop
 development** workload and .NET 8 SDK. Set `Elka.VM.Mini.Control` as the startup
@@ -327,6 +338,8 @@ Fader checks cover input names, external updates, source changes during a drag,
 gain limits, queued readback and settings persistence. SEL checks cover protected
 mouse clicks, Ctrl-click master mode, unguarded MIDI/hotkey toggles, external
 selection changes and startup/reconnect behavior.
+Single-instance checks use isolated names and child processes to verify duplicate
+launches, activation during startup, tray restoration and recovery after exit/crash.
 The checks render the main window, settings, hotkey, MIDI and VBAN dialogs into
 `artifacts/checks`.
 
